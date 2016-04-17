@@ -1,0 +1,6 @@
+[package]
+name = "iff"
+version = "0.1.0"
+authors = ["Ilya Rezvov <i.rezvov@yandex.ru>"]
+
+[dependencies]
