@@ -4,6 +4,7 @@ pub mod iff {
     pub mod chunkid {
         use std::fmt;
         use std::str;
+        use std::str::FromStr;
         use std::result;
         
         #[derive(Debug, PartialEq, Eq)]
@@ -73,16 +74,20 @@ pub mod iff {
                 Ok(ChunkId([slice[0], slice[1], slice[2], slice[3]]))
             }
             
-            pub fn from_str(str: &str) -> Result {
-                ChunkId::new(str.as_bytes())
-            }
-            
             pub fn to_str(&self) -> &str {
                 str::from_utf8(&self.0[0..]).unwrap()
             }
             
             pub fn is_reserved(&self) -> bool {
                 RESERVED_CHUNK_IDS.contains(&self.to_str())
+            }
+        }
+        
+        impl FromStr for ChunkId {
+            type Err = ChunkIdError;
+            
+            fn from_str(s: &str) -> Result {
+                ChunkId::new(s.as_bytes())
             }
         }
         
@@ -131,6 +136,7 @@ pub mod iff {
 mod test {
     use iff::*;
     use iff::chunkid::ChunkIdError;
+    use std::str::FromStr;
     
     const NULL: &'static [u8] = &[0; 0];
     
@@ -162,30 +168,18 @@ mod test {
     
     #[test]
     fn short_input_for_chunk_id() {
-        let id = ChunkId::new("abc".as_bytes());
-        assert!(id.unwrap_err() == ChunkIdError::ShortLength)
+        assert!(ChunkId::new(b"abc").unwrap_err() == ChunkIdError::ShortLength);
+        assert!(ChunkId::new(b"abcde").unwrap().to_str() == "abcd")
     }
     
     #[test]
     fn chunk_id_cannot_have_inner_space() {
-        assert!(ChunkId::new(" abc".as_bytes()).unwrap_err() == ChunkIdError::SpacePrecedeLetter);
-        assert!(ChunkId::new("a bc".as_bytes()).unwrap_err() == ChunkIdError::SpacePrecedeLetter);
-        assert!(ChunkId::new("ab c".as_bytes()).unwrap_err() == ChunkIdError::SpacePrecedeLetter);
-        assert!(ChunkId::new("  ab".as_bytes()).unwrap_err() == ChunkIdError::SpacePrecedeLetter);
-        assert!(ChunkId::new("a  b".as_bytes()).unwrap_err() == ChunkIdError::SpacePrecedeLetter);
-        assert!(ChunkId::new("   a".as_bytes()).unwrap_err() == ChunkIdError::SpacePrecedeLetter)
-    }
-    
-    #[test]
-    fn chunk_id_can_have_trailing_spaces() {
-        assert!(ChunkId::new("abc ".as_bytes()).is_ok())
-    }
-    
-    #[test]
-    fn long_input_for_chunk() {
-        let id = ChunkId::new("abcde".as_bytes()).unwrap();
-        assert!(id.to_str() == "abcd")
-    }
+        let bad_names = [" abc", "a bc", "ab c", "  ab", "a  b", "   a"];
+        for id in bad_names.iter() {
+            assert!(ChunkId::from_str(id).unwrap_err() == ChunkIdError::SpacePrecedeLetter)
+        }
+        assert!(ChunkId::new(b"abc ").is_ok())
+    } 
     
     #[test]
     fn reserved_chunks() {
