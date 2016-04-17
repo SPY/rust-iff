@@ -4,7 +4,6 @@ pub mod iff {
     pub mod chunkid {
         use std::fmt;
         use std::str;
-        use std::str::FromStr;
         use std::result;
         
         #[derive(Debug, PartialEq, Eq)]
@@ -75,7 +74,7 @@ pub mod iff {
             }
             
             pub fn to_str(&self) -> &str {
-                str::from_utf8(&self.0[0..]).unwrap()
+                str::from_utf8(&self.0).unwrap()
             }
             
             pub fn is_reserved(&self) -> bool {
@@ -83,7 +82,7 @@ pub mod iff {
             }
         }
         
-        impl FromStr for ChunkId {
+        impl str::FromStr for ChunkId {
             type Err = ChunkIdError;
             
             fn from_str(s: &str) -> Result {
@@ -143,15 +142,8 @@ mod test {
     #[test]
     fn space_for_data_is_allocated() {
         let data = [0; 4];
-        let chunk = Chunk::new(ChunkId::from_str("data").unwrap(), 4, &data).unwrap();
-        assert!(chunk.len() == 4)
-    }
-    
-    #[test]
-    fn not_enough_data() {
-        let data = [0; 4];
-        let chunk = Chunk::new(ChunkId::from_str("data").unwrap(), 8, &data);
-        assert!(chunk.is_none())
+        assert!(Chunk::new(ChunkId::from_str("data").unwrap(), 4, &data).unwrap().len() == 4);
+        assert!(Chunk::new(ChunkId::from_str("data").unwrap(), 8, &data).is_none())
     }
     
     #[test]
@@ -162,7 +154,7 @@ mod test {
     
     #[test]
     fn chunk_id_is_unprintable() {
-        let id = ChunkId::new(&[0, 1, 2, 3][0..]);
+        let id = ChunkId::new(&[0, 1, 2, 3]);
         assert!(id.unwrap_err() == ChunkIdError::UnsupportedChar)
     }
     
