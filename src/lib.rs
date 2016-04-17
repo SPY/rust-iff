@@ -51,12 +51,12 @@ pub mod iff {
             false
         }
         
-        static RESERVED_CHUNK_IDS: [&'static str; 32] = [
-            "LIST", "LIS1", "LIS2", "LIS3", "LIS4", "LIS5", "LIS6", "LIS7", "LIS8", "LIS9", 
-            "FORM", "FOR1", "FOR2", "FOR3", "FOR4", "FOR5", "FOR6", "FOR7", "FOR8", "FOR9",
-            "CAT ", "CAT1", "CAT2", "CAT3", "CAT4", "CAT5", "CAT6", "CAT7", "CAT8", "CAT9",
-            "PROP",
-            "    "
+        static RESERVED_CHUNK_IDS: [&'static [u8; 4]; 32] = [
+            b"LIST", b"LIS1", b"LIS2", b"LIS3", b"LIS4", b"LIS5", b"LIS6", b"LIS7", b"LIS8", b"LIS9", 
+            b"FORM", b"FOR1", b"FOR2", b"FOR3", b"FOR4", b"FOR5", b"FOR6", b"FOR7", b"FOR8", b"FOR9",
+            b"CAT ", b"CAT1", b"CAT2", b"CAT3", b"CAT4", b"CAT5", b"CAT6", b"CAT7", b"CAT8", b"CAT9",
+            b"PROP",
+            b"    "
         ];
         
         impl ChunkId {
@@ -78,7 +78,7 @@ pub mod iff {
             }
             
             pub fn is_reserved(&self) -> bool {
-                RESERVED_CHUNK_IDS.contains(&self.to_str())
+                RESERVED_CHUNK_IDS.contains(&&self.0)
             }
         }
         
